@@ -24,7 +24,7 @@ struct Query {
 };
 
 // Ввод запроса
-istream& operator>>(istream& is, Query& q) {
+istream& operator>>(istream& is, Query& query) {
     // Тип
     string type;
     is >> type;
@@ -33,43 +33,37 @@ istream& operator>>(istream& is, Query& q) {
     // Добавление автобуса
     if (type == "NEW_BUS"s) {
         // Тип запроса
-        q.type = QueryType::NewBus;
-
+        query.type = QueryType::NewBus;
         // Автобус
-        string bus;
-        cin >> q.bus;
-
+        is >> query.bus;
         // Количество остановок
         int stop_count;
-        cin >> stop_count;
+        is >> stop_count;
 
         // Ввод остановок
-        q.stops.resize(stop_count);
-        for (string& stop : q.stops) {
-            cin >> stop;
+        query.stops.resize(stop_count);
+        for (string& stop : query.stops) {
+            is >> stop;
         }
 
     // Автобусы на конкретной остановке
     } else if (type == "BUSES_FOR_STOP"s) {
         // Тип запроса
-        q.type = QueryType::BusesForStop;
-
+        query.type = QueryType::BusesForStop;
         // Остановка
-        string stop;
-        cin >> q.stop;
+        is >> query.stop;
         
     // Остановки автобуса
     } else if (type == "STOPS_FOR_BUS"s) {
         // Тип запроса
-        q.type = QueryType::StopsForBus;
-
-        string bus;
-        cin >> q.bus;
+        query.type = QueryType::StopsForBus;
+        // Автобус
+        is >> query.bus;
 
     // Все автобусы
     } else if (type == "ALL_BUSES"s) {
         // Тип запроса
-        q.type = QueryType::AllBuses;
+        query.type = QueryType::AllBuses;
     }
     
     return is;
@@ -124,9 +118,68 @@ public:
 // Реализуйте функции и классы, объявленные выше, чтобы эта функция main
 // решала задачу "Автобусные остановки"
 
+// Тест запросов
+void TestQueries() {
+    // Запрос
+    Query query;
+
+    // Ввод
+    istringstream input;
+
+    // Добавление автобуса
+    input.str("NEW_BUS 32 3 Tolstopaltsevo Marushkino Vnukovo"s);
+    // Ввод запроса
+    input >> query;
+    // Тип запроса
+    assert(query.type == QueryType::NewBus);
+    // Автобус
+    assert(query.bus == "32"s);
+    // Остановки
+    string stops;
+    for (const string& stop : query.stops) {
+        stops += stop;
+        stops += " "s;
+    }
+    assert(stops == "Tolstopaltsevo Marushkino Vnukovo "s);
+    input.clear();
+
+    // Автобусы на конкретной остановке
+    input.str("BUSES_FOR_STOP Vnukovo"s);
+    // Ввод запроса
+    input >> query;
+    // Тип запроса
+    assert(query.type == QueryType::BusesForStop);
+    // Остановка
+    assert(query.stop == "Vnukovo"s);
+    input.clear();
+
+    // Остановки автобуса
+    input.str("STOPS_FOR_BUS 32K"s);
+    // Ввод запроса
+    input >> query;
+    // Тип запроса
+    assert(query.type == QueryType::StopsForBus);
+    // Автобус
+    assert(query.bus == "32K"s);
+    input.clear();
+
+    // Все автобусы
+    input.str("ALL_BUSES"s);
+    // Ввод запроса
+    input >> query;
+    // Тип запроса
+    assert(query.type == QueryType::AllBuses);
+    input.clear();
+
+    cout << "Test Queries is OK" << endl;
+}
+
 int main() {
+    // Тест запросов
+    TestQueries();
+
     // Менеджер автобусов
-    BusManager bm;
+    BusManager bus_manager;
 
     // Количество запросов
     int query_count;
@@ -134,26 +187,26 @@ int main() {
     cin >> query_count;
 
     // Запрос
-    Query q;
+    Query query;
     for (int i = 0; i < query_count; ++i) {
         // Ввод запроса
         cout << "Query input: ";
-        cin >> q;
+        cin >> query;
         cout << endl;
 
-        // switch (q.type) {
-        //     case QueryType::NewBus:
-        //         bm.AddBus(q.bus, q.stops);
-        //         break;
-        //     case QueryType::BusesForStop:
-        //         cout << bm.GetBusesForStop(q.stop) << endl;
-        //         break;
-        //     case QueryType::StopsForBus:
-        //         cout << bm.GetStopsForBus(q.bus) << endl;
-        //         break;
-        //     case QueryType::AllBuses:
-        //         cout << bm.GetAllBuses() << endl;
-        //         break;
-        // }
+        switch (query.type) {
+            case QueryType::NewBus:
+                bus_manager.AddBus(query.bus, query.stops);
+                break;
+            case QueryType::BusesForStop:
+                cout << bus_manager.GetBusesForStop(query.stop) << endl;
+                break;
+            case QueryType::StopsForBus:
+                cout << bus_manager.GetStopsForBus(query.bus) << endl;
+                break;
+            case QueryType::AllBuses:
+                cout << bus_manager.GetAllBuses() << endl;
+                break;
+        }
     }
 }
