@@ -99,7 +99,12 @@ ostream& operator<<(ostream& os, const AllBusesResponse& r) {
 class BusManager {
 public:
     void AddBus(const string& bus, const vector<string>& stops) {
-        // Реализуйте этот метод
+        // Автобус и его остановки
+        buses_to_stops[bus] = stops;
+        // Остановки с этим автобусом
+        for (const string& stop : stops) {
+            stops_to_buses[stop].push_back(bus);
+        }
     }
 
     BusesForStopResponse GetBusesForStop(const string& stop) const {
@@ -113,6 +118,11 @@ public:
     AllBusesResponse GetAllBuses() const {
         // Реализуйте этот метод
     }
+private:
+    // Автобусы в остановки
+    map<string, vector<string>> buses_to_stops;
+    // Остановки в автобусы
+    map<string, vector<string>> stops_to_buses;
 };
 
 // Реализуйте функции и классы, объявленные выше, чтобы эта функция main
