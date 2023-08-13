@@ -69,35 +69,67 @@ istream& operator>>(istream& is, Query& query) {
     return is;
 }
 
+// Автобусы на конкретной остановке
 struct BusesForStopResponse {
-    // Наполните полями эту структуру
+    // Остановка
+    string stop = ""s;
+    // Автобусы
+    vector<string> buses;
 };
 
+// Вывод автобусов на конкретной остановке
 ostream& operator<<(ostream& os, const BusesForStopResponse& r) {
     // Реализуйте эту функцию
     return os;
 }
 
+
+// Остановки автобуса
 struct StopsForBusResponse {
-    // Наполните полями эту структуру
+    // Автобус
+    string bus = ""s;
+    // Остановки
+    vector<string> stops;
 };
 
+// Вывод остановок автобуса
 ostream& operator<<(ostream& os, const StopsForBusResponse& r) {
     // Реализуйте эту функцию
     return os;
 }
 
+
+// Все автобусы
 struct AllBusesResponse {
-    // Наполните полями эту структуру
+    // Автобусы и их остановки
+    map<string, vector<string>> buses_to_stops;
 };
 
+// Вывод всех автобусов
 ostream& operator<<(ostream& os, const AllBusesResponse& r) {
-    // Реализуйте эту функцию
+    // Если автобусов нет
+    if (r.buses_to_stops.empty()) {
+        os << "No buses"s << endl;
+    } 
+    else {
+        // Проход по автобусам
+        for (const auto& [bus, stops] : r.buses_to_stops) {
+            // Вывод автобуса
+            os << "Bus "s << bus << ":"s;
+            // Проход по остановкам автобуса
+            for (const string& stop : stops) {
+                // Вывод остановки
+                os << " "s << stop;
+            }
+            os << endl;
+        }
+    }
     return os;
 }
 
 class BusManager {
 public:
+    // Добавление автобуса
     void AddBus(const string& bus, const vector<string>& stops) {
         // Автобус и его остановки
         buses_to_stops[bus] = stops;
@@ -107,16 +139,38 @@ public:
         }
     }
 
+    // Автобусы на конкретной остановке
     BusesForStopResponse GetBusesForStop(const string& stop) const {
-        // Реализуйте этот метод
+        // Если есть автобусы для остановки
+        if (stops_to_buses.count(stop) != 0) {
+            return BusesForStopResponse({stop, stops_to_buses.at(stop)});
+        } 
+        return BusesForStopResponse({stop, vector<string>(0)});
     }
 
+    // Остановки автобуса
     StopsForBusResponse GetStopsForBus(const string& bus) const {
-        // Реализуйте этот метод
+        if (buses_to_stops.count(bus) != 0) {
+            for (const string& stop : buses_to_stops.at(bus)) {
+                cout << "Stop "s << stop << ": "s;
+                if (stops_to_buses.at(stop).size() == 1) {
+                    cout << "no interchange"s;
+                } else {
+                    for (const string& other_bus : stops_to_buses.at(stop)) {
+                        if (bus != other_bus) {
+                            cout << other_bus << " "s;
+                        }
+                    }
+                }
+                cout << endl;
+            }
+        } 
+        return StopsForBusResponse({bus, vector<string>(0)});
     }
 
+    // Все автобусы
     AllBusesResponse GetAllBuses() const {
-        // Реализуйте этот метод
+        return AllBusesResponse({buses_to_stops});
     }
 private:
     // Автобусы в остановки
@@ -124,9 +178,6 @@ private:
     // Остановки в автобусы
     map<string, vector<string>> stops_to_buses;
 };
-
-// Реализуйте функции и классы, объявленные выше, чтобы эта функция main
-// решала задачу "Автобусные остановки"
 
 // Тест запросов
 void TestQueries() {
